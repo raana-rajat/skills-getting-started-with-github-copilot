@@ -142,3 +142,38 @@ footer {
   padding: 20px;
   color: #666;
 }
+
+.participants {
+  margin-top: 12px;
+  padding-left: 20px; /* preserve bullets */
+  list-style: disc;
+}
+
+.participants li {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background-color: #f1f8ff;
+  color: #03396c;
+  border-radius: 8px;
+  list-style-position: inside; /* keeps the bullet inside the pill */
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+  font-size: 14px;
+}
+
+.participants-title {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  color: #1a237e;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Slightly refine the "no participants" info look inside cards */
+.activity-card .info {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background-color: #eaf6ff;
+  color: #05507a;
+  border-radius: 6px;
+  font-size: 14px;
+}
