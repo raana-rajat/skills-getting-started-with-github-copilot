@@ -1,2 +1,8 @@
 fastapi
 uvicorn
+
+# Required by pydantic for EmailStr validation
+email-validator
+pytest
+requests
+httpx
