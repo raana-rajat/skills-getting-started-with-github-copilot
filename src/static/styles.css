@@ -142,3 +142,55 @@ footer {
   padding: 20px;
   color: #666;
 }
+
+.participants {
+  margin-top: 12px;
+  padding-left: 0; /* hide native bullets */
+  list-style: none;
+}
+
+.participants li {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background-color: #f1f8ff;
+  color: #03396c;
+  border-radius: 8px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Delete button next to participant */
+.delete-participant {
+  background: transparent;
+  border: none;
+  color: #c62828;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.delete-participant:hover {
+  background-color: rgba(198, 40, 40, 0.08);
+}
+
+.participants-title {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  color: #1a237e;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Slightly refine the "no participants" info look inside cards */
+.activity-card .info {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background-color: #eaf6ff;
+  color: #05507a;
+  border-radius: 6px;
+  font-size: 14px;
+}

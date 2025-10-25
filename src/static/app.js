@@ -4,6 +4,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  // escape HTML to avoid XSS when inserting participant text
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (s) => {
+      const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+      return map[s];
+    });
+  }
+
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
@@ -13,6 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // Clear loading message
       activitiesList.innerHTML = "";
 
+      // Reset activity select options (avoid duplicates on re-run)
+      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
+
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
         const activityCard = document.createElement("div");
@@ -20,11 +31,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
+        // Build participants section: bulleted list or a friendly info line
+        let participantsHTML = "";
+        const participants = details.participants || [];
+        if (participants.length === 0) {
+          participantsHTML = `<p class="info">No participants yet.</p>`;
+        } else {
+          // Render participants with a delete icon next to each one.
+          participantsHTML = `<div class="participants-section">
+                <div class="participants-title">Participants</div>
+                <ul class="participants">
+                  ${participants
+                    .map(
+                      (p) =>
+                        `<li><span class="participant-email">${escapeHtml(p)}</span><button class="delete-participant" data-activity="${escapeHtml(name)}" data-email="${escapeHtml(p)}" title="Unregister">🗑️</button></li>`
+                    )
+                    .join("")}
+                </ul>
+              </div>`;
+        }
+
         activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
+          <h4>${escapeHtml(name)}</h4>
+          <p>${escapeHtml(details.description)}</p>
+          <p><strong>Schedule:</strong> ${escapeHtml(details.schedule)}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          ${participantsHTML}
         `;
 
         activitiesList.appendChild(activityCard);
@@ -62,6 +94,13 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+
+        // Refresh activities so the newly-signed-up participant appears immediately
+        try {
+          await fetchActivities();
+        } catch (err) {
+          console.error("Error refreshing activities after signup:", err);
+        }
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
@@ -78,6 +117,39 @@ document.addEventListener("DOMContentLoaded", () => {
       messageDiv.className = "error";
       messageDiv.classList.remove("hidden");
       console.error("Error signing up:", error);
+    }
+  });
+
+  // Event delegation for delete participant buttons
+  activitiesList.addEventListener("click", async (event) => {
+    const btn = event.target.closest && event.target.closest(".delete-participant");
+    if (!btn) return;
+
+    const email = btn.dataset.email;
+    const activity = btn.dataset.activity;
+
+    if (!email || !activity) return;
+
+    if (!confirm(`Unregister ${email} from ${activity}?`)) return;
+
+    try {
+      const resp = await fetch(`/activities/${encodeURIComponent(activity)}/unregister`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await resp.json();
+      if (resp.ok) {
+        // Refresh the activities list to reflect the removed participant
+        await fetchActivities();
+      } else {
+        console.error("Unregister failed", result);
+        alert(result.detail || result.message || "Failed to unregister participant");
+      }
+    } catch (err) {
+      console.error("Error unregistering participant:", err);
+      alert("Failed to unregister participant. Try again.");
     }
   });
 
